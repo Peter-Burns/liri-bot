@@ -1,4 +1,5 @@
 var keys = require('./keys.js');
+var fs = require('fs');
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var Request = require('request');
@@ -22,24 +23,65 @@ function tweetGetter (){
 		}
 	});
 }
-function spotifyGetter (){
-	spotify.search({ type: 'track', query: process.argv[3], limit:1 }, function(err, data) {
+function spotifyGetter (query){
+	spotify.search({ type: 'track', query: query, limit:1 }, function(err, data) {
 		  if (err) {
 			      return console.log('Error occurred: ' + err);
 			    }
-		 
-		console.log(data.tracks.items[0].name);
-		console.log(data.tracks.items[0].artists[0].name);
-		console.log(data.tracks.items[0].album.name);
-		console.log(data.tracks.items[0].external_urls.spotify);
+		var song = data.tracks.items[0]; 
+		console.log(song.name);
+		console.log(song.artists[0].name);
+		console.log(song.album.name);
+		console.log(song.external_urls.spotify);
 	});
 }
-function movieGetter (){
-	request("http://www.omdbapi.com/?t=" + process.argv[3] + "&y=&plot=short&apikey=trilogy", function(error, response, body) {
+function movieGetter (query){
+	Request("http://www.omdbapi.com/?t=" + query + "&y=&plot=short&apikey=trilogy", function(error, response, body) {
 
 		if (!error && response.statusCode === 200) {
-			console.log("The movie's rating is: " + JSON.parse(body).imdbRating);
+			var movie = JSON.parse(body);
+			console.log(movie.Title);
+			console.log(movie.Ratings[0].Value);
+			console.log(movie.Ratings[1].Value);
+			console.log(movie.Country);
+			console.log(movie.Language);
+			console.log(movie.Actors);
+			console.log(movie.Plot);
 		}
 	});
 }
-movieGetter();
+function parseFunc (){
+	fs.readFile('random.txt','utf8',function(err,data){
+		if(err)return console.log(err);
+		data = data.split(',');
+		switch(data[0]){
+			case 'my-tweets':
+				tweetGetter();
+				break;
+			case 'spotify-this-song':
+				spotifyGetter(data[1]);
+				break;
+			case 'movie-this':
+				movieGetter(data[1]);
+				break;
+			default:
+				console.log('Invalid file format');
+		}
+	});
+}
+switch(process.argv[2]){
+	case 'my-tweets':
+		tweetGetter();
+		break;
+	case 'spotify-this-song':
+		spotifyGetter(process.argv[3]);
+		break;
+	case 'movie-this':
+		movieGetter(process.argv[3]);
+		break;
+	case 'do-what-it-says':
+		parseFunc();
+		break;
+	default:
+		console.log('Invalid method');
+}
