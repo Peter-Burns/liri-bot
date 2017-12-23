@@ -16,14 +16,18 @@ var spotify = new Spotify ({
 function tweetGetter (){
 	client.get('favorites/list', function(err,tweets,response){
 		if(err)throw err;
+		var tweetData = [];
 		for(i in tweets){
 			console.log(tweets[i].user.name);
 			console.log(tweets[i].text);
 			console.log(tweets[i].created_at + '\n');
+			tweetData.push(tweets[i].user.name,tweets[i].text,tweets[i].created_at);
 		}
+		fs.appendFile('log.txt',tweetData,function(err){if(err)return console.log(err)});
 	});
 }
 function spotifyGetter (query){
+	if(!query)query = 'The Sign Ace of Base';
 	spotify.search({ type: 'track', query: query, limit:1 }, function(err, data) {
 		  if (err) {
 			      return console.log('Error occurred: ' + err);
@@ -33,9 +37,12 @@ function spotifyGetter (query){
 		console.log(song.artists[0].name);
 		console.log(song.album.name);
 		console.log(song.external_urls.spotify);
+		var songData = [song.name,song.artists[0].name,song.album.name,song.external_urls.spotify];
+		fs.appendFile('log.txt',songData,function(err){if(err)return console.log(err)});
 	});
 }
 function movieGetter (query){
+	if(!query)query = 'Mr. Nobody';
 	Request("http://www.omdbapi.com/?t=" + query + "&y=&plot=short&apikey=trilogy", function(error, response, body) {
 
 		if (!error && response.statusCode === 200) {
@@ -47,6 +54,8 @@ function movieGetter (query){
 			console.log(movie.Language);
 			console.log(movie.Actors);
 			console.log(movie.Plot);
+			var movieData = [movie.Title, movie.Ratings[0].Value,movie.Ratings[1].Value,movie.Country,movie.Language,movie.Actors,movie.Plot];
+			fs.appendFile('log.txt',movieData,function(err){if(err)return console.log(err)});
 		}
 	});
 }
@@ -69,6 +78,7 @@ function parseFunc (){
 		}
 	});
 }
+fs.appendFile('log.txt','\n\n#' + process.argv[2] + '\n\n', function(err){if(err)return console.log(err)});
 switch(process.argv[2]){
 	case 'my-tweets':
 		tweetGetter();
