@@ -1,20 +1,13 @@
+require('dotenv').config();
 var keys = require('./keys.js');
 var fs = require('fs');
 var Twitter = require('twitter');
 var Spotify = require('node-spotify-api');
 var Request = require('request');
-var client = new Twitter({
-	consumer_key:keys.consumer_key,
-	consumer_secret:keys.consumer_secret,
-	access_token_key:keys.access_token_key,
-	access_token_secret:keys.access_token_secret,
-});
-var spotify = new Spotify ({
-	id:'427bf7edae9046ff867c149c256bebde',
-	secret:'4d22215fd8194aea811826b0a41f173c',
-});
+var client = new Twitter(keys.twitter);
+var spotify = new Spotify (keys.spotify);
 function tweetGetter (){
-	client.get('favorites/list', function(err,tweets,response){
+	client.get('statuses/user_timeline', function(err,tweets,response){
 		if(err)throw err;
 		var tweetData = [];
 		for(i in tweets){
